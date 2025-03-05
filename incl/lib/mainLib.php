@@ -2147,6 +2147,8 @@ class Library {
 	public static function reportLevel($levelID, $IP) {
 		require __DIR__."/connection.php";
 		
+		if (empty($levelID) || !is_numeric($levelID)) return false;
+
 		$checkIfReported = $db->prepare("SELECT count(*) FROM reports WHERE levelID = :levelID AND IP REGEXP :IP");
 		$checkIfReported->execute([':levelID' => $levelID, ':IP' => self::convertIPForSearching($IP, true)]);
 		$checkIfReported = $checkIfReported->fetchColumn();
@@ -3374,12 +3376,11 @@ class Library {
 		require __DIR__."/connection.php";
 		
 		$accountID = $person['accountID'];
-		$IP = $person['IP'];
+		$IP = $person['IP'] ?? '0.0.0.0';
 		
 		$insertAction = $db->prepare('INSERT INTO actions (account, type, timestamp, value, value2, value3, value4, value5, value6, IP)
 			VALUES (:account, :type, :timestamp, :value, :value2, :value3, :value4, :value5, :value6, :IP)');
-		$insertAction->execute([':account' => $accountID, ':type' => $type, ':value' => $value1, ':value2' => $value2, ':value3' => $value3, ':value4' => $value4, ':value5' => $value5, ':value6' => $value6, ':timestamp' => time(), ':IP' => $IP]);
-		
+		$insertAction->execute([':account' => (int)$accountID, ':type' => $type, ':value' => $value1 ?: '', ':value2' => $value2, ':value3' => $value3, ':value4' => $value4, ':value5' => $value5, ':value6' => $value6, ':timestamp' => time(), ':IP' => $IP]);
 		return $db->lastInsertId();
 	}
 	
